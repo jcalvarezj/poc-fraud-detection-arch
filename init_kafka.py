@@ -39,14 +39,16 @@ def create_topic(topic_name: str, num_partitions: int, replication_factor: int):
 num_partitions = 1
 replication_factor = 1
 
-for topic_name in ["fraudulent-transactions", "unidentified-transactions",
-                   "users", "fraudulent-transaction-results"]:
+for topic_name in ("fraudulent-transactions", "unidentified-transactions",
+                   "users", "fraudulent-transaction-results"):
     create_topic(topic_name, num_partitions, replication_factor)
 
 
 ## Schema Registry actions
 
 TRANSACTIONS_SCHEMA = "transaction-schema-value"
+TRANSACTIONS_RESULT_SCHEMA = "transaction-result-schema-value"
+USERS_SCHEMA = "user-schema-value"
 sr_conf = {
     "url": "http://localhost:8081",
     "auto.register.schemas": False
@@ -57,8 +59,12 @@ def load_avro_schema(file_path):
         schema_str = schema_file.read()
     return parse(schema_str)
 
-user_avro_schema = load_avro_schema("avro/user.avsc")
-transaction_avro_schema = load_avro_schema("avro/transaction.avsc")
+schema_name_avros = {
+    TRANSACTIONS_SCHEMA: load_avro_schema("avro/transaction.avsc"),
+    TRANSACTIONS_RESULT_SCHEMA: load_avro_schema("avro/transaction_result.avsc"),
+    USERS_SCHEMA: load_avro_schema("avro/user.avsc")
+}
+
 schema_registry_client = CachedSchemaRegistryClient(sr_conf)
 
 def register_schema(schema, schema_name):
@@ -79,13 +85,11 @@ def get_schema(schema_name):
         print(f"Error getting schema: {e}")
         return None, e
 
+for schema_name in (TRANSACTIONS_SCHEMA, TRANSACTIONS_RESULT_SCHEMA, USERS_SCHEMA):
+    id, err = register_schema(schema_name_avros[schema_name], schema_name)
+    if id:
+        print(f"Successfully registered {schema_name} schema")
 
-id, err = register_schema(transaction_avro_schema, TRANSACTIONS_SCHEMA)
-
-if id:
-    print("Successfully registered AVRO schemas")
-
-transaction_schema, err = get_schema(TRANSACTIONS_SCHEMA)
-
-if transaction_schema:
-    print(transaction_schema)
+    transaction_schema, err = get_schema(schema_name)
+    if transaction_schema:
+        print(transaction_schema)
