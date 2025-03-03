@@ -34,6 +34,19 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     mem_limit: '1g'
 
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.0
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_LISTENER_HTTP_PORT: 8081
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+
   multi-bank-system:
     image: sgg10/multi-bank-system
     container_name: multi-bank-system
@@ -52,6 +65,6 @@ services:
 
   transactions-ingestor:
     build:
-      context: 0-ingestion
+      context: ingestion
     environment:
       KAFKA_BOOTSTRAP: kafka:29092
