@@ -1,24 +1,36 @@
 import os
+from uuid import uuid4
 
 from models import Transaction
 
-from avro.schema import Parse
-from confluent_kafka import Consumer, Producer, KafkaException, KafkaError
+from confluent_kafka import Consumer, SerializingProducer, KafkaException, KafkaError
 from confluent_kafka.schema_registry.avro import AvroSerializer
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.serialization import SerializationContext
 
-conf = {
+consumer_conf = {
     'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP"),
     'group.id': 'transactions-ingestor',
     'auto.offset.reset': 'earliest'
 }
+producer_conf = {
+    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP"),
+    "transactional.id": str(uuid4())
+}
 sr_conf = {
-    "url": "http://localhost:8081",
+    "url": "http://" + os.getenv("SR_HOST")
+}
+serializer_conf = {
     "auto.register.schemas": False
 }
 
-topic = 'bank-transactions'
-consumer = Consumer(conf)
-consumer.subscribe([topic])
+TRANSACTIONS_SCHEMA = "transaction-schema-value"
+TOPIC = 'bank-transactions'
+consumer = Consumer(consumer_conf)
+consumer.subscribe([TOPIC])
+producer = SerializingProducer(producer_conf)
+producer.init_transactions()
+schema_registry_client = SchemaRegistryClient(sr_conf)
 
 
 def _delivery_report(error, message):
@@ -27,26 +39,44 @@ def _delivery_report(error, message):
     else:
         print(f'Message sent to topic {message.topic()}')
 
-def _load_avro_schema(file_path):
-    with open(file_path, 'r') as schema_file:
-        schema_str = schema_file.read()
-        return Parse(schema_str)
-
 def _consume_message(raw_message):
     message = raw_message.value().decode('utf-8')
     transaction_data = Transaction.model_validate_json(message)
 
-    producer = Producer(conf, default_value_schema=_load_avro_schema("avro/transaction.avsc"))
+    print("Received transaction: ", transaction_data)
+    print(sr_conf)
+
+    schema_response = schema_registry_client.get_latest_version(TRANSACTIONS_SCHEMA)
+    context_topic = TRANSACTIONS_SCHEMA.split("-value")[0]
+
+    print("Obtained schema information", schema_response)
 
     serializer = AvroSerializer(
         schema_registry_client=schema_registry_client,
-        schema_str=response.schema.schema_str,
-        conf=serializer_conf,
+        schema_str=schema_response.schema.schema_str,
+        conf=serializer_conf
     )
 
-    if transaction_data.evaluation == "fraudulent":
-        producer.produce('fraudulent-transactions', value=transaction_data, callback=_delivery_report)
-        producer.flush()
+    print("Created serializer")
+
+    context = SerializationContext(topic=context_topic, field="value")
+    serialized_message = serializer(transaction_data.model_dump(), context)
+
+    try:
+        eval = transaction_data.evaluation
+        if eval == "fraudulent" or eval == "unidentified":
+            producer.begin_transaction()
+            producer.produce(
+                topic=f'{eval}-transactions',
+                value=serialized_message
+            )
+            producer.commit_transaction()
+
+            print(f"Sent transaction to topic {eval}-transactions")
+    except Exception as e:
+        print(f"An error has occurred when sending data to Kafka: {e}")
+        producer.abort_transaction()
+        raise e
 
 def consume_messages():
     while True:
@@ -65,6 +95,6 @@ def consume_messages():
         except KeyboardInterrupt:
             break
         except Exception as e:
-            print(f"Error al consumir mensaje: {e}")
+            print(f"Error consuming the message: {e}")
 
     consumer.close()

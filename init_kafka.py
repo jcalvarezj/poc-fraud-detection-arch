@@ -46,6 +46,7 @@ for topic_name in ["fraudulent-transactions", "unidentified-transactions",
 
 ## Schema Registry actions
 
+TRANSACTIONS_SCHEMA = "transaction-schema-value"
 sr_conf = {
     "url": "http://localhost:8081",
     "auto.register.schemas": False
@@ -79,12 +80,12 @@ def get_schema(schema_name):
         return None, e
 
 
-id, err = register_schema(transaction_avro_schema, "transaction-schema-value")
+id, err = register_schema(transaction_avro_schema, TRANSACTIONS_SCHEMA)
 
 if id:
     print("Successfully registered AVRO schemas")
 
-transaction_schema, err = get_schema("transaction-schema-value")
+transaction_schema, err = get_schema(TRANSACTIONS_SCHEMA)
 
 if transaction_schema:
     print(transaction_schema)
