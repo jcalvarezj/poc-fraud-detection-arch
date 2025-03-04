@@ -1,6 +1,7 @@
 #!/bin/bash
-# Provisional startup of infrastructure (requires already downloaded
-# and cached images on a first run of `docker-compose up` or `docker-compose build`)
+# Provisional startup of infrastructure. Include flag --build
+# to build container images (recommended for first use)
+# It will create a 'venv' virtual environment if it doesn't exist
 
 if [ ! -d "venv" ]; then
     echo "Virtual environment not found. Creating and installing dependencies..."
@@ -10,6 +11,11 @@ if [ ! -d "venv" ]; then
 else
     echo "Activating found virtual environment..."
     source venv/bin/activate
+fi
+
+if [[ $1 == "--build" ]]; then
+    echo "Building docker-compose services..."
+    docker-compose build
 fi
 
 docker-compose up schema-registry -d
@@ -22,6 +28,6 @@ echo "Waiting a bit for KSQLDB to start..."
 sleep 40
 echo "Initializing KSQLDB Streams"
 source init_ksql.sh
-echo "Starting the rest of the infrastructure..."
-docker-compose up --build
+echo "Starting the rest of the infrastructure (detached mode)..."
+docker-compose up --build -d
 deactivate
