@@ -1,6 +1,6 @@
 #!/bin/bash
 # Provisional startup of infrastructure (requires already downloaded
-# and cached images on a first run of `docker-compose up`)
+# and cached images on a first run of `docker-compose up` or `docker-compose build`)
 docker-compose up schema-registry -d
 echo "Waiting a bit for Kafka to start..."
 sleep 35

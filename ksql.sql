@@ -1,15 +1,5 @@
 -- Input Stream
 CREATE STREAM fraudulent_transactions_stream
-    (transaction_id STRING,
-     sender_bank_account STRING,
-     sender_details STRUCT<id STRING, name STRING, address STRING, email STRING, birthdate STRING, phone_number STRING, job STRING, company STRING, ssn STRING, blood_group STRING, website STRING, username STRING, bank_account STRING>,
-     receiver_bank_account STRING,
-     receiver_details STRUCT<id STRING, name STRING, address STRING, email STRING, birthdate STRING, phone_number STRING, job STRING, company STRING, ssn STRING, blood_group STRING, website STRING, username STRING, bank_account STRING>,
-     amount DOUBLE,
-     status STRING,
-     evaluation STRING,
-     transfer_date STRING,
-     sender_bank STRING)
 WITH (KAFKA_TOPIC='fraudulent-transactions', VALUE_FORMAT='AVRO', PARTITIONS=1);
 
 -- Filter Output Stream 1 (Transaction info. only)
