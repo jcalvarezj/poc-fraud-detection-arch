@@ -29,5 +29,5 @@ sleep 40
 echo "Initializing KSQLDB Streams"
 source init_ksql.sh
 echo "Starting the rest of the infrastructure (detached mode)..."
-docker-compose up --build -d
+docker-compose up -d
 deactivate
