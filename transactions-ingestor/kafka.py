@@ -9,12 +9,12 @@ from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka import Consumer, SerializingProducer, KafkaException, KafkaError
 
 consumer_conf = {
-    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP"),
+    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP_SERVER"),
     'group.id': 'transactions-ingestor',
     'auto.offset.reset': 'earliest'
 }
 producer_conf = {
-    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP"),
+    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP_SERVER"),
     "transactional.id": str(uuid4())
 }
 sr_conf = {

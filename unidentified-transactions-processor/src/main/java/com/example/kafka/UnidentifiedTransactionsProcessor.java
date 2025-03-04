@@ -12,7 +12,8 @@ public class UnidentifiedTransactionsProcessor {
     private final static String INPUT_TOPIC = "unidentified-transactions";
     private final static String USERS_OUTPUT_TOPIC = "users";
     private final static String TXS_OUTPUT_TOPIC = "fraudulent-transactions-result";
-    private final static String BOOTSTRAP_SERVER = "localhost:9092";
+    private final static String BOOTSTRAP_SERVER = System.getenv("KAFKA_BOOTSTRAP_SERVER") != null ? System.getenv("KAFKA_BOOTSTRAP_SERVER") : "localhost:9092";
+
     public static void main(String[] args) {
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "simple-streams-app");
@@ -22,6 +23,9 @@ public class UnidentifiedTransactionsProcessor {
 
         StreamsBuilder builder = new StreamsBuilder();
         KStream<String, String> inputStream = builder.stream(INPUT_TOPIC);
+        inputStream.foreach((key, value) -> {
+            System.out.println("Received message: key = " + key + ", value = " + value);
+        });
 
         KStream<String, String> transformedStream = inputStream
             .mapValues(value -> value.toUpperCase())
