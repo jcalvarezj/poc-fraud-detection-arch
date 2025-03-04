@@ -13,7 +13,7 @@ CREATE STREAM fraudulent_transactions_stream
 WITH (KAFKA_TOPIC='fraudulent-transactions', VALUE_FORMAT='AVRO', PARTITIONS=1);
 
 -- Filter Output Stream 1 (Transaction info. only)
-CREATE STREAM fraudulent_transaction_results_stream
+CREATE STREAM fraudulent_transactions_result_stream
 WITH (KAFKA_TOPIC='fraudulent-transactions-result', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
     SELECT
         transaction_id,
@@ -31,7 +31,7 @@ WITH (KAFKA_TOPIC='fraudulent-transactions-result', VALUE_FORMAT='AVRO', PARTITI
 
 -- Filter Output Stream 2 (Sender user)
 CREATE STREAM sender_users_stream
-WITH (KAFKA_TOPIC='user', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
+WITH (KAFKA_TOPIC='users', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
     SELECT
         sender_details->id,
         sender_details->name,
@@ -51,7 +51,7 @@ WITH (KAFKA_TOPIC='user', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
 
 -- Filter Output Stream 3 (Receiver user)
 CREATE STREAM receiver_users_stream
-WITH (KAFKA_TOPIC='user', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
+WITH (KAFKA_TOPIC='users', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
     SELECT
         receiver_details->id,
         receiver_details->name,

@@ -14,13 +14,6 @@ admin_client = AdminClient(admin_conf)
 
 
 def create_topic(topic_name: str, num_partitions: int, replication_factor: int):
-    """
-    Crea un tópico Kafka en el servidor especificado.
-
-    :param topic_name: Nombre del tópico a crear.
-    :param num_partitions: Número de particiones para el tópico.
-    :param replication_factor: Factor de replicación del tópico.
-    """
     try:
         new_topic = NewTopic(topic_name, num_partitions=num_partitions, 
                              replication_factor=replication_factor)
@@ -40,15 +33,13 @@ num_partitions = 1
 replication_factor = 1
 
 for topic_name in ("fraudulent-transactions", "unidentified-transactions",
-                   "users", "fraudulent-transaction-results"):
+                   "users", "fraudulent-transactions-result"):
     create_topic(topic_name, num_partitions, replication_factor)
 
 
 ## Schema Registry actions
 
-TRANSACTIONS_SCHEMA = "transaction-schema-value"
-TRANSACTIONS_RESULT_SCHEMA = "transaction-result-schema-value"
-USERS_SCHEMA = "user-schema-value"
+TRANSACTIONS_SCHEMA = "fraudulent-transactions-value"
 sr_conf = {
     "url": "http://localhost:8081",
     "auto.register.schemas": False
@@ -60,9 +51,7 @@ def load_avro_schema(file_path):
     return parse(schema_str)
 
 schema_name_avros = {
-    TRANSACTIONS_SCHEMA: load_avro_schema("avro/transaction.avsc"),
-    TRANSACTIONS_RESULT_SCHEMA: load_avro_schema("avro/transaction_result.avsc"),
-    USERS_SCHEMA: load_avro_schema("avro/user.avsc")
+    TRANSACTIONS_SCHEMA: load_avro_schema("avro/fraudulent_transaction.avsc")
 }
 
 schema_registry_client = CachedSchemaRegistryClient(sr_conf)
@@ -85,7 +74,7 @@ def get_schema(schema_name):
         print(f"Error getting schema: {e}")
         return None, e
 
-for schema_name in (TRANSACTIONS_SCHEMA, TRANSACTIONS_RESULT_SCHEMA, USERS_SCHEMA):
+for schema_name in schema_name_avros:
     id, err = register_schema(schema_name_avros[schema_name], schema_name)
     if id:
         print(f"Successfully registered {schema_name} schema")

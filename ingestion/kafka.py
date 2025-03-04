@@ -3,10 +3,10 @@ from uuid import uuid4
 
 from models import Transaction
 
-from confluent_kafka import Consumer, SerializingProducer, KafkaException, KafkaError
+from confluent_kafka.serialization import SerializationContext
 from confluent_kafka.schema_registry.avro import AvroSerializer
 from confluent_kafka.schema_registry import SchemaRegistryClient
-from confluent_kafka.serialization import SerializationContext
+from confluent_kafka import Consumer, SerializingProducer, KafkaException, KafkaError
 
 consumer_conf = {
     'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP"),
@@ -24,7 +24,7 @@ serializer_conf = {
     "auto.register.schemas": False
 }
 
-TRANSACTIONS_SCHEMA = "transaction-schema-value"
+TRANSACTIONS_SCHEMA = "fraudulent-transactions-value"
 TOPIC = 'bank-transactions'
 consumer = Consumer(consumer_conf)
 consumer.subscribe([TOPIC])
@@ -32,12 +32,6 @@ producer = SerializingProducer(producer_conf)
 producer.init_transactions()
 schema_registry_client = SchemaRegistryClient(sr_conf)
 
-
-def _delivery_report(error, message):
-    if error is not None:
-        print(f'Error sending message: {error}')
-    else:
-        print(f'Message sent to topic {message.topic()}')
 
 def _consume_message(raw_message):
     message = raw_message.value().decode('utf-8')

@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "name": "Transaction",
+  "name": "FraudulentTransaction",
   "fields": [
     {"name": "transaction_id", "type": "string"},
     {"name": "sender_bank_account", "type": "string"},
