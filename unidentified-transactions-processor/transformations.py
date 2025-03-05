@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 def model_dump_fix_keys(model: BaseModel):
     return {
-        key.upper(): value for key, value 
+        key.upper(): value for key, value
         in model.model_dump().items()
     }
 

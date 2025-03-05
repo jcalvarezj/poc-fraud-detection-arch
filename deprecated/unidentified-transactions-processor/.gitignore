@@ -1,5 +1,0 @@
-*.class
-target/
-recycle/
-.vscode/
-dependency-reduced-pom.xml
