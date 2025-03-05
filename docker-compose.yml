@@ -85,11 +85,11 @@ services:
       context: transactions-ingestor
     environment:
       KAFKA_BOOTSTRAP_SERVER: kafka:29092
-      SR_HOST: schema-registry:8081
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
 
   unidentified-transactions-processor:
     build:
       context: unidentified-transactions-processor
     environment:
       KAFKA_BOOTSTRAP_SERVER: kafka:29092
-      SR_HOST: schema-registry:8081
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081

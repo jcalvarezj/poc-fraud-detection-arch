@@ -2,6 +2,7 @@
 # Provisional startup of infrastructure. Include flag --build
 # to build container images (recommended for first use)
 # It will create a 'venv' virtual environment if it doesn't exist
+# If it fails use 'docker-compose down' and try again
 
 if [ ! -d "venv" ]; then
     echo "Virtual environment not found. Creating and installing dependencies..."

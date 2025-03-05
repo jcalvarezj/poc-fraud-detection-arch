@@ -1,0 +1,58 @@
+{
+  "type": "record",
+  "name": "FraudulentTransaction",
+  "fields": [
+    {"name": "transaction_id", "type": "string"},
+    {"name": "sender_bank_account", "type": "string"},
+    {
+      "name": "sender_details",
+      "type": {
+        "type": "record",
+        "name": "SenderDetails",
+        "fields": [
+          {"name": "id", "type": "string"},
+          {"name": "name", "type": "string"},
+          {"name": "address", "type": "string"},
+          {"name": "email", "type": "string"},
+          {"name": "birthdate", "type": "string"},
+          {"name": "phone_number", "type": "string"},
+          {"name": "job", "type": "string"},
+          {"name": "company", "type": "string"},
+          {"name": "ssn", "type": "string"},
+          {"name": "blood_group", "type": "string"},
+          {"name": "website", "type": "string"},
+          {"name": "username", "type": "string"},
+          {"name": "bank_account", "type": "string"}
+        ]
+      }
+    },
+    {"name": "receiver_bank_account", "type": "string"},
+    {
+      "name": "receiver_details",
+      "type": {
+        "type": "record",
+        "name": "ReceiverDetails",
+        "fields": [
+          {"name": "id", "type": "string"},
+          {"name": "name", "type": "string"},
+          {"name": "address", "type": "string"},
+          {"name": "email", "type": "string"},
+          {"name": "birthdate", "type": "string"},
+          {"name": "phone_number", "type": "string"},
+          {"name": "job", "type": "string"},
+          {"name": "company", "type": "string"},
+          {"name": "ssn", "type": "string"},
+          {"name": "blood_group", "type": "string"},
+          {"name": "website", "type": "string"},
+          {"name": "username", "type": "string"},
+          {"name": "bank_account", "type": "string"}
+        ]
+      }
+    },
+    {"name": "amount", "type": "float"},
+    {"name": "status", "type": "string"},
+    {"name": "evaluation", "type": "string"},
+    {"name": "transfer_date", "type": "string"},
+    {"name": "sender_bank", "type": "string"}
+  ]
+}

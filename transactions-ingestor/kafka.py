@@ -18,7 +18,7 @@ producer_conf = {
     "transactional.id": str(uuid4())
 }
 sr_conf = {
-    "url": "http://" + os.getenv("SR_HOST")
+    "url": os.getenv("SCHEMA_REGISTRY_URL")
 }
 serializer_conf = {
     "auto.register.schemas": False

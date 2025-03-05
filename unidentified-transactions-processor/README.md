@@ -10,7 +10,7 @@ To run this worker a Kafka cluster must be running in the same network with the 
 
 ### JAR only
 
-`mvn clean package -DskipTests `
+`mvn clean package -DskipTests`
 `java -jar target/kafka-streams-app-1.0-SNAPSHOT.jar`
 
 ### Docker container
