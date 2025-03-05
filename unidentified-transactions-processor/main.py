@@ -1,6 +1,5 @@
 import os
 import json
-from uuid import uuid4
 
 from quixstreams.models import (
     SchemaRegistryClientConfig,
@@ -10,7 +9,7 @@ from quixstreams import Application
 from quixstreams.models.serializers.avro import AvroDeserializer, AvroSerializer
 from confluent_kafka.schema_registry import SchemaRegistryClient
 
-from transformations import extract_transaction_data, extract_user_data
+from transformations import extract_transaction_data, extract_user_data, identify_fraudulence
 
 
 INPUT_TOPIC_NAME = "unidentified-transactions"
@@ -70,13 +69,17 @@ def main():
 
     sdf_input = app.dataframe(input_topic)
 
-    sdf_txn_result = sdf_input.apply(extract_transaction_data)
+    sdf_fraud_txn = sdf_input.apply(identify_fraudulence).filter(
+        lambda message: message["is_fraudulent"]
+    )
+
+    sdf_txn_result = sdf_fraud_txn.apply(extract_transaction_data)
     sdf_txn_result.to_topic(txn_result_topic)
 
-    sdf_sender_user = sdf_input.apply(lambda record: extract_user_data(record, True))
+    sdf_sender_user = sdf_fraud_txn.apply(lambda message: extract_user_data(message, True))
     sdf_sender_user.to_topic(users_topic)
 
-    sdf_receiver_user = sdf_input.apply(extract_user_data)
+    sdf_receiver_user = sdf_fraud_txn.apply(extract_user_data)
     sdf_receiver_user.to_topic(users_topic)
 
     app.run()
