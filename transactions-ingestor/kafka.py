@@ -31,9 +31,11 @@ consumer.subscribe([TOPIC])
 producer = SerializingProducer(producer_conf)
 producer.init_transactions()
 schema_registry_client = SchemaRegistryClient(sr_conf)
-
+serializer = None
 
 def _consume_message(raw_message):
+    global serializer
+
     message = raw_message.value().decode('utf-8')
     transaction_data = Transaction.model_validate_json(message)
 
@@ -43,13 +45,14 @@ def _consume_message(raw_message):
     schema_response = schema_registry_client.get_latest_version(TRANSACTIONS_SCHEMA)
     context_topic = TRANSACTIONS_SCHEMA.split("-value")[0]
 
-    print("Obtained schema information", schema_response)
+    print("Obtained schema information")
 
-    serializer = AvroSerializer(
-        schema_registry_client=schema_registry_client,
-        schema_str=schema_response.schema.schema_str,
-        conf=serializer_conf
-    )
+    if not serializer:
+        serializer = AvroSerializer(
+            schema_registry_client=schema_registry_client,
+            schema_str=schema_response.schema.schema_str,
+            conf=serializer_conf
+        )
 
     print("Created serializer")
 

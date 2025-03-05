@@ -15,9 +15,10 @@ class User(BaseModel):
     website: str
     username: str
     bank_account: str
+    source_process: str = "kafka-streams"
 
 
-class TransactionAVRO(BaseModel): # TODO - Usar para etapa de procesamiento
+class TransactionResult(BaseModel):
     transaction_id: str
     sender_bank_account: str
     sender_user_id: str
@@ -28,6 +29,7 @@ class TransactionAVRO(BaseModel): # TODO - Usar para etapa de procesamiento
     evaluation: str
     transfer_date: str
     sender_bank: str
+    source_process: str = "kafka-streams"
 
 
 class Transaction(BaseModel):
@@ -42,15 +44,20 @@ class Transaction(BaseModel):
     transfer_date: str
     sender_bank: str
 
-    def to_avro_model(self) -> TransactionAVRO:
-        avro_data = {}
+    def to_transaction_result(self) -> TransactionResult:
+        transaction_result_data = {}
 
-        for field in TransactionAVRO.__annotations__:
+        for field in TransactionResult.__annotations__:
             if field in self.__dict__:
                 value = getattr(self, field)
-                avro_data[field] = value
+                transaction_result_data[field] = value
 
-        avro_data["sender_user_id"] = self.sender_details.id
-        avro_data["receiver_user_id"] = self.receiver_details.id
+        transaction_result_data["sender_user_id"] = self.sender_details.id
+        transaction_result_data["receiver_user_id"] = self.receiver_details.id
 
-        return TransactionAVRO(**avro_data)
+        return TransactionResult(**transaction_result_data)
+
+    def get_user_data(self, is_sender: bool = False):
+        prefix = "sender" if is_sender else "receiver"
+        user_details: User = getattr(self, f"{prefix}_details")
+        return User(**user_details.model_dump())

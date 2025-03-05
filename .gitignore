@@ -1,6 +1,7 @@
-venv/
+__pycache__/
 recycle/
 state/
+venv/
 .vscode/
 *.log
 *.jar

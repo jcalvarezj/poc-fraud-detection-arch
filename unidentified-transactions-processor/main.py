@@ -2,51 +2,50 @@ import os
 import json
 from uuid import uuid4
 
-from confluent_kafka.schema_registry import SchemaRegistryClient
-from quixstreams import Application
 from quixstreams.models import (
     SchemaRegistryClientConfig,
     SchemaRegistrySerializationConfig,
 )
+from quixstreams import Application
 from quixstreams.models.serializers.avro import AvroDeserializer, AvroSerializer
-from quixstreams.sinks.core.csv import CSVSink
+from confluent_kafka.schema_registry import SchemaRegistryClient
+
+from transformations import extract_transaction_data, extract_user_data
 
 
 INPUT_TOPIC_NAME = "unidentified-transactions"
-OUTPUT_TOPIC_NAME = "fraudulent-transactions-result"
-TRANSACTIONS_SCHEMA_NAME = "fraudulent-transactions-value"
-TRANSACTIONS_RESULT_SCHEMA_NAME = "fraudulent-transactions-result-value"
+TXN_TOPIC_NAME = "fraudulent-transactions"
+TXN_RESULT_TOPIC_NAME = "fraudulent-transactions-result"
+USERS_TOPIC_NAME = "users"
+
+KAFKA_BOOTSTRAP_SERVER = os.getenv("KAFKA_BOOTSTRAP_SERVER", "http://localhost:9092")
+SCHEMA_REGISTRY_URL = os.getenv("SCHEMA_REGISTRY_URL", "http://localhost:8081")
 
 schema_registry_client_config = SchemaRegistryClientConfig(
-    url='http://localhost:8081'
+    url=SCHEMA_REGISTRY_URL
 )
 schema_registry_serialization_config = SchemaRegistrySerializationConfig(
     auto_register_schemas=False,
 )
-consumer_conf = {
-    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP_SERVER"),
-    'group.id': 'transactions-ingestor',
-    'auto.offset.reset': 'earliest'
-}
-producer_conf = {
-    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP_SERVER"),
-    "transactional.id": str(uuid4())
-}
 sr_conf = {
-    "url": os.getenv("SCHEMA_REGISTRY_URL", "http://localhost:8081")
+    "url": SCHEMA_REGISTRY_URL
 }
 
 schema_registry_client = SchemaRegistryClient(sr_conf)
 
-schema_response = schema_registry_client.get_latest_version(TRANSACTIONS_SCHEMA_NAME)
+schema_response = schema_registry_client.get_latest_version(f"{TXN_TOPIC_NAME}-value")
 transactions_schema = json.loads(schema_response.schema.schema_str)
-schema_response = schema_registry_client.get_latest_version(TRANSACTIONS_RESULT_SCHEMA_NAME)
+
+schema_response = schema_registry_client.get_latest_version(f"{TXN_RESULT_TOPIC_NAME}-value")
 transactions_result_schema = json.loads(schema_response.schema.schema_str)
+
+schema_response = schema_registry_client.get_latest_version(f"{USERS_TOPIC_NAME}-value")
+users_schema = json.loads(schema_response.schema.schema_str)
 
 
 def main():
     app = Application(
-        broker_address="localhost:9092",
+        broker_address=KAFKA_BOOTSTRAP_SERVER,
         loglevel="INFO",
         consumer_group="unidentified-transactions-processor",
         auto_offset_reset="latest",
@@ -58,18 +57,27 @@ def main():
                                 schema=transactions_schema,
                                 schema_registry_client_config=schema_registry_client_config
                             ))
-    output_topic = app.topic(OUTPUT_TOPIC_NAME,
+    txn_result_topic = app.topic(TXN_RESULT_TOPIC_NAME,
                             value_serializer=AvroSerializer(
                                 schema=transactions_result_schema,
                                 schema_registry_client_config=schema_registry_client_config
                             ))
+    users_topic = app.topic(USERS_TOPIC_NAME,
+                            value_serializer=AvroSerializer(
+                                schema=users_schema,
+                                schema_registry_client_config=schema_registry_client_config
+                            ))
 
-    #sdf = app.dataframe(input_topic).apply(lambda x: print(type(x), x)).to_topic(output_topic)
-    sdf = app.dataframe(input_topic).apply(lambda x: print(type(x), x)).sink(
-        CSVSink(
-            path="file.csv"
-        )
-    )
+    sdf_input = app.dataframe(input_topic)
+
+    sdf_txn_result = sdf_input.apply(extract_transaction_data)
+    sdf_txn_result.to_topic(txn_result_topic)
+
+    sdf_sender_user = sdf_input.apply(lambda record: extract_user_data(record, True))
+    sdf_sender_user.to_topic(users_topic)
+
+    sdf_receiver_user = sdf_input.apply(extract_user_data)
+    sdf_receiver_user.to_topic(users_topic)
 
     app.run()
 
