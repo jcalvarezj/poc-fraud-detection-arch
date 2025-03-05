@@ -87,9 +87,9 @@ services:
       KAFKA_BOOTSTRAP_SERVER: kafka:29092
       SCHEMA_REGISTRY_URL: http://schema-registry:8081
 
-  unidentified-transactions-processor:
-    build:
-      context: unidentified-transactions-processor
-    environment:
-      KAFKA_BOOTSTRAP_SERVER: kafka:29092
-      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+  # unidentified-transactions-processor:
+  #   build:
+  #     context: unidentified-transactions-processor
+  #   environment:
+  #     KAFKA_BOOTSTRAP_SERVER: kafka:29092
+  #     SCHEMA_REGISTRY_URL: http://schema-registry:8081

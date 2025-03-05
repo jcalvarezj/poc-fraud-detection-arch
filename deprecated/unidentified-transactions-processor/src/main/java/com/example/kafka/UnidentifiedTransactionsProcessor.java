@@ -13,10 +13,6 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.Consumed;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 
-import com.example.kafka.avro.FraudulentTransaction;
-import com.example.kafka.avro.FraudulentTransactionResult;
-//import com.example.kafka.avro.User;
-
 
 public class UnidentifiedTransactionsProcessor {
     private final static String INPUT_TOPIC = "unidentified-transactions";

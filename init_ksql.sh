@@ -14,7 +14,8 @@ WITH (KAFKA_TOPIC='fraudulent-transactions-result', VALUE_FORMAT='AVRO', PARTITI
         status,
         evaluation,
         transfer_date,
-        sender_bank
+        sender_bank,
+        'ksql' AS source_process
     FROM fraudulent_transactions_stream
     EMIT CHANGES;"
 "CREATE STREAM sender_users_stream
@@ -32,7 +33,8 @@ WITH (KAFKA_TOPIC='users', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
         sender_details->blood_group,
         sender_details->website,
         sender_details->username,
-        sender_details->bank_account
+        sender_details->bank_account,
+        'ksql' AS source_process
     FROM fraudulent_transactions_stream
     EMIT CHANGES;"
 "CREATE STREAM receiver_users_stream
@@ -50,7 +52,8 @@ WITH (KAFKA_TOPIC='users', VALUE_FORMAT='AVRO', PARTITIONS=1) AS
         receiver_details->blood_group,
         receiver_details->website,
         receiver_details->username,
-        receiver_details->bank_account
+        receiver_details->bank_account,
+        'ksql' AS source_process
     FROM fraudulent_transactions_stream
     EMIT CHANGES;"
 )
