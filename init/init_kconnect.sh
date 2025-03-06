@@ -5,7 +5,8 @@ USERS_TOPIC=users
 TXNS_TABLE_NAME=transactions
 USERS_TABLE_NAME=users
 
-S3_BUCKET=test0000-fraudulent-transactions-raw
+S3_BUCKET=test0001-fraudulent-transactions-raw
+TOP_FOLDER=fraudulent-transactions
 TXNS_S3_FOLDER=fraudulent-transactions/transactions
 USERS_S3_FOLDER=fraudulent-transactions/users
 
@@ -69,11 +70,11 @@ TXNS_S3_PAYLOAD=$(cat <<EOF
         "connector.class": "io.confluent.connect.s3.S3SinkConnector",
         "tasks.max": "1",
         "topics": "${TXNS_TOPIC}",
+        "topics.dir": "${TOP_FOLDER}",
         "s3.bucket.name": "${S3_BUCKET}",
         "s3.region": "${MY_AWS_REGION}",
         "storage.class": "io.confluent.connect.s3.storage.S3Storage",
         "format.class": "io.confluent.connect.s3.format.avro.AvroFormat",
-        "s3.folder.name": "${TXNS_S3_FOLDER}",
         "key.converter": "io.confluent.connect.avro.AvroConverter",
         "value.converter": "io.confluent.connect.avro.AvroConverter",
         "key.converter.schema.registry.url": "${SCHEMA_REGISTRY_URL}",
@@ -93,11 +94,11 @@ USERS_S3_PAYLOAD=$(cat <<EOF
         "connector.class": "io.confluent.connect.s3.S3SinkConnector",
         "tasks.max": "1",
         "topics": "${USERS_TOPIC}",
+        "topics.dir": "${TOP_FOLDER}",
         "s3.bucket.name": "${S3_BUCKET}",
         "s3.region": "${MY_AWS_REGION}",
         "storage.class": "io.confluent.connect.s3.storage.S3Storage",
         "format.class": "io.confluent.connect.s3.format.avro.AvroFormat",
-        "s3.folder.name": "${USERS_S3_FOLDER}",
         "key.converter": "io.confluent.connect.avro.AvroConverter",
         "value.converter": "io.confluent.connect.avro.AvroConverter",
         "key.converter.schema.registry.url": "${SCHEMA_REGISTRY_URL}",
@@ -119,6 +120,6 @@ echo "Creating connectors..."
 
 for payload in "${KCONNECT_PAYLOADS[@]}"
 do
-    curl -X POST "${KCONNECT_HOST}" -H "Content-Type: application/json" -d $payload
+    curl -X POST "${KCONNECT_HOST}" -H "Content-Type: application/json" -d $payload > /dev/null
     echo
 done
