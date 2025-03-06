@@ -15,7 +15,7 @@ def model_dump_fix_keys(model: BaseModel):
     }
 
 def extract_transaction_data(message: dict):
-    message.pop("is_fraudulent", None)
+    message["evaluation"] = "fraudulent" if message.pop("is_fraudulent", None) else None
     transaction = Transaction.model_validate(message)
     transaction_result = transaction.to_transaction_result()
     print(f"Sending transaction data!")
