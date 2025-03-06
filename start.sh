@@ -2,7 +2,8 @@
 # Provisional startup of infrastructure. Include flag --build
 # to build container images (recommended for first use)
 # It will create a 'venv' virtual environment if it doesn't exist
-# If it fails use 'docker-compose down' and try again
+# If it fails use 'docker-compose down' and try again (remember to
+# deactivate the virtual environment )
 
 if [ ! -d "venv" ]; then
     echo "Virtual environment not found. Creating and installing dependencies..."
@@ -30,7 +31,7 @@ start_service_and_wait() {
   sleep $wait_time
 }
 
-start_service_and_wait "schema-registry" 40
+start_service_and_wait "schema-registry" 50
 
 echo "Initializing Kafka topics and schemas"
 python init/init_kafka.py
@@ -40,7 +41,7 @@ start_service_and_wait "ksqldb" 40
 echo "Initializing KSQLDB Streams"
 source init/init_ksql.sh
 
-start_service_and_wait "kafka-connect" 60
+start_service_and_wait "kafka-connect" 70
 
 echo "Initializing Kafka Connect connectors"
 source init/init_kconnect.sh
