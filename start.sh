@@ -19,16 +19,33 @@ if [[ $1 == "--build" ]]; then
     docker-compose build
 fi
 
-docker-compose up schema-registry -d
-echo "Waiting a bit for Kafka to start..."
-sleep 40
+start_service_and_wait() {
+  service_name=$1
+  wait_time=$2
+
+  echo "Starting $service_name..."
+  docker-compose up $service_name -d
+
+  echo "Waiting for $service_name to start..."
+  sleep $wait_time
+}
+
+start_service_and_wait "schema-registry" 40
+
 echo "Initializing Kafka topics and schemas"
-python init_kafka.py
-docker-compose up ksqldb -d
-echo "Waiting a bit for KSQLDB to start..."
-sleep 40
+python init/init_kafka.py
+
+start_service_and_wait "ksqldb" 40
+
 echo "Initializing KSQLDB Streams"
-source init_ksql.sh
+source init/init_ksql.sh
+
+start_service_and_wait "kafka-connect" 60
+
+echo "Initializing Kafka Connect connectors"
+source init/init_kconnect.sh
+
 echo "Starting the rest of the infrastructure (detached mode)..."
 docker-compose up -d
+
 deactivate
