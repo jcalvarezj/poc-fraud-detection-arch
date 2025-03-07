@@ -1,5 +1,5 @@
 #!/bin/bash
-# Provisional startup of infrastructure. Include flag --build
+# Startup script that runs the infrastructure. Include flag --build
 # to build container images (recommended for first use)
 # It will create a 'venv' virtual environment if it doesn't exist
 # If it fails use 'docker-compose down' and try again (remember to

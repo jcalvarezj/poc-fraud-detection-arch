@@ -1,6 +1,7 @@
 {
   "type": "record",
   "name": "FraudulentTransaction",
+  "doc": "Schema that represents a record of a fraudulent transaction including receiver and sender user data",
   "fields": [
     {"name": "transaction_id", "type": "string"},
     {"name": "sender_bank_account", "type": "string"},

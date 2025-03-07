@@ -7,8 +7,6 @@ USERS_TABLE_NAME=users
 
 S3_BUCKET=test0001-fraudulent-transactions-raw
 TOP_FOLDER=fraudulent-transactions
-TXNS_S3_FOLDER=fraudulent-transactions/transactions
-USERS_S3_FOLDER=fraudulent-transactions/users
 
 FLUSH_EVERY=30
 

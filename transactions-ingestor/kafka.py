@@ -1,12 +1,14 @@
 import os
 from uuid import uuid4
 
-from models import Transaction
-
 from confluent_kafka.serialization import SerializationContext
 from confluent_kafka.schema_registry.avro import AvroSerializer
 from confluent_kafka.schema_registry import SchemaRegistryClient
-from confluent_kafka import Consumer, SerializingProducer, KafkaException, KafkaError
+from confluent_kafka import (Consumer, Message, SerializingProducer,
+                             KafkaException, KafkaError)
+
+from models import Transaction
+
 
 consumer_conf = {
     'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP_SERVER"),
@@ -24,8 +26,8 @@ serializer_conf = {
     "auto.register.schemas": False
 }
 
-TRANSACTIONS_SCHEMA = "fraudulent-transactions-value"
 TOPIC = 'bank-transactions'
+TRANSACTIONS_SCHEMA = "fraudulent-transactions-value"
 consumer = Consumer(consumer_conf)
 consumer.subscribe([TOPIC])
 producer = SerializingProducer(producer_conf)
@@ -33,7 +35,18 @@ producer.init_transactions()
 schema_registry_client = SchemaRegistryClient(sr_conf)
 serializer = None
 
-def _consume_message(raw_message):
+
+def _process_consumed_message(raw_message: Message):
+    """
+    Retreives transaction data from the consumed messaged and serializes it
+    over the corresponding output topic according to the transaction evaluation
+
+    Args:
+        - raw_message (confluent_kafka.Message): A consumed JSON-serialized message
+        to process
+    Raises:
+        - Exception: Any uncaught exception
+    """
     global serializer
 
     message = raw_message.value().decode('utf-8')
@@ -75,7 +88,12 @@ def _consume_message(raw_message):
         producer.abort_transaction()
         raise e
 
+
 def consume_messages():
+    """
+    Main worker loop that constantly polls messages from the consumer's 
+    subscribed topic and processes them
+    """
     while True:
         try:
             kafka_message = consumer.poll(timeout=1.0)
@@ -88,7 +106,7 @@ def consume_messages():
                 else:
                     raise KafkaException(kafka_message.error())
 
-            _consume_message(kafka_message)
+            _process_consumed_message(kafka_message)
         except KeyboardInterrupt:
             break
         except Exception as e:

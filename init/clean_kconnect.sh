@@ -1,3 +1,4 @@
+#!/bin/bash
 echo "Removing the connectors from Kafka Connect..."
 
 curl -X DELETE http://localhost:8083/connectors/transactions-mongo-sink-connector

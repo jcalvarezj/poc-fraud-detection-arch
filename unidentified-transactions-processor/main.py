@@ -9,7 +9,8 @@ from quixstreams import Application
 from quixstreams.models.serializers.avro import AvroDeserializer, AvroSerializer
 from confluent_kafka.schema_registry import SchemaRegistryClient
 
-from transformations import extract_transaction_data, extract_user_data, identify_fraudulence
+from transformations import (extract_transaction_data, extract_user_data,
+                             identify_fraudulence)
 
 
 INPUT_TOPIC_NAME = "unidentified-transactions"
