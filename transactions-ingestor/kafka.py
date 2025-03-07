@@ -107,6 +107,10 @@ def consume_messages():
                     raise KafkaException(kafka_message.error())
 
             _process_consumed_message(kafka_message)
+            ## TODO - Improve with
+            # with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            #     future = executor.submit(_process_consumed_message)
+            #     future.result()
         except KeyboardInterrupt:
             break
         except Exception as e:

@@ -69,7 +69,7 @@ def identify_fraudulence(message: dict) -> dict:
     """
     payload = {
         "transaction_id": message["transaction_id"],
-        "sender_bank_account": message["transaction_id"],
+        "sender_bank_account": message["sender_bank_account"],
         "receiver_details": json.dumps(message["receiver_details"]),
         "sender_bank": message["sender_bank"],
         "amount": message["amount"]

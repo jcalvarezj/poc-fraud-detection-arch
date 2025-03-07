@@ -68,8 +68,8 @@ class Transaction(BaseModel):
         transaction_result_data = {}
 
         for field in TransactionResult.__annotations__:
-            if field in self.__dict__:
-                value = getattr(self, field)
+        #    if field in self.__dict__:
+            if value := getattr(self, field):
                 transaction_result_data[field] = value
 
         transaction_result_data["sender_user_id"] = self.sender_details.id
