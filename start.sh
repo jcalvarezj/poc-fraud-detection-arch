@@ -3,7 +3,7 @@
 # to build container images (recommended for first use)
 # It will create a 'venv' virtual environment if it doesn't exist
 # If it fails use 'docker-compose down' and try again (remember to
-# deactivate the virtual environment )
+# deactivate the virtual environment in case of error exit)
 
 if [ ! -d "venv" ]; then
     echo "Virtual environment not found. Creating and installing dependencies..."
