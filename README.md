@@ -30,6 +30,8 @@ The following environment variables are required for the execution of this proce
 - MY_AWS_SECRET_ACCESS_KEY: Secret access key credentials for AWS with S3 permissions
 - MY_AWS_REGION: Region credentials for AWS
 
+The Kafka Connect connector targets can be configured correspondingly in the [init/init_kconnect.sh](init/init_kconnect.sh) file
+
 ## Execution
 
 For the first use please run with the `--build` flag, so that the images are created beforehand
