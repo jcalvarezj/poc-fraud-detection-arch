@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-COPY requirements.txt ./requirements.txt
+COPY . .
 
 RUN apt-get update && apt-get install -y \
     coreutils \
@@ -11,7 +11,5 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends
 
 RUN pip install -r ./requirements.txt
-
-COPY . .
 
 CMD ["python", "main.py"]

@@ -1,5 +1,6 @@
 import os
 from uuid import uuid4
+import concurrent.futures
 
 from confluent_kafka.serialization import SerializationContext
 from confluent_kafka.schema_registry.avro import AvroSerializer
@@ -106,11 +107,11 @@ def consume_messages():
                 else:
                     raise KafkaException(kafka_message.error())
 
-            _process_consumed_message(kafka_message)
-            ## TODO - Improve with
-            # with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-            #     future = executor.submit(_process_consumed_message)
-            #     future.result()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+                future = executor.submit(
+                    lambda msg=kafka_message: _process_consumed_message(msg)
+                )
+                future.result()
         except KeyboardInterrupt:
             break
         except Exception as e:
