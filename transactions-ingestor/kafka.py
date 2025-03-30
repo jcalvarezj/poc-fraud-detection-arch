@@ -34,7 +34,14 @@ consumer.subscribe([TOPIC])
 producer = SerializingProducer(producer_conf)
 producer.init_transactions()
 schema_registry_client = SchemaRegistryClient(sr_conf)
-serializer = None
+schema_response = schema_registry_client.get_latest_version(TRANSACTIONS_SCHEMA)
+context_topic = TRANSACTIONS_SCHEMA.split("-value")[0]
+serializer = AvroSerializer(
+    schema_registry_client=schema_registry_client,
+    schema_str=schema_response.schema.schema_str,
+    conf=serializer_conf
+)
+context = SerializationContext(topic=context_topic, field="value")
 
 
 def _process_consumed_message(raw_message: Message):
@@ -48,29 +55,12 @@ def _process_consumed_message(raw_message: Message):
     Raises:
         - Exception: Any uncaught exception
     """
-    global serializer
-
     message = raw_message.value().decode('utf-8')
     transaction_data = Transaction.model_validate_json(message)
 
     print("Received transaction: ", transaction_data)
     print(sr_conf)
 
-    schema_response = schema_registry_client.get_latest_version(TRANSACTIONS_SCHEMA)
-    context_topic = TRANSACTIONS_SCHEMA.split("-value")[0]
-
-    print("Obtained schema information")
-
-    if not serializer:
-        serializer = AvroSerializer(
-            schema_registry_client=schema_registry_client,
-            schema_str=schema_response.schema.schema_str,
-            conf=serializer_conf
-        )
-
-    print("Created serializer")
-
-    context = SerializationContext(topic=context_topic, field="value")
     serialized_message = serializer(transaction_data.model_dump(), context)
 
     try:

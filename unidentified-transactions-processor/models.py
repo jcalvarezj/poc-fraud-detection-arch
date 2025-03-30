@@ -28,9 +28,9 @@ class TransactionResult(BaseModel):
     """
     transaction_id: str
     sender_bank_account: str
-    sender_user_id: str
+    sender_id: str
     receiver_bank_account: str
-    receiver_user_id: str
+    receiver_id: str
     amount: float
     status: str
     evaluation: str
@@ -71,8 +71,8 @@ class Transaction(BaseModel):
             if value := getattr(self, field, None):
                 transaction_result_data[field] = value
 
-        transaction_result_data["sender_user_id"] = self.sender_details.id
-        transaction_result_data["receiver_user_id"] = self.receiver_details.id
+        transaction_result_data["sender_id"] = self.sender_details.id
+        transaction_result_data["receiver_id"] = self.receiver_details.id
 
         return TransactionResult(**transaction_result_data)
 
